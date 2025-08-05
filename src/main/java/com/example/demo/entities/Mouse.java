@@ -1,29 +1,20 @@
 package com.example.demo.entities;
 
 import jakarta.persistence.*;
+import lombok.*;
+import java.util.UUID;
 
 @Entity
 @Table(name = "mouses")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Mouse {
     @Id
-    private int id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private UUID id;
 
     @Column(nullable = false)
     private String name;
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getName() {
-        return name;
-    }
 }

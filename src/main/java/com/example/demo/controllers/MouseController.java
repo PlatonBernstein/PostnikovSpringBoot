@@ -1,47 +1,42 @@
 package com.example.demo.controllers;
 
 import com.example.demo.entities.Mouse;
-import com.example.demo.repository.MouseRepository;
+import com.example.demo.services.MouseService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/mouses")
 public class MouseController {
-
-    private final MouseRepository mouseRepository;
-
-    public MouseController(MouseRepository mouseRepository) {
-        this.mouseRepository = mouseRepository;
-    }
+    private final MouseService mouseService;
 
     @GetMapping
     public List<Mouse> getAll() {
-        return mouseRepository.findAll();
+        return mouseService.getAll();
+    }
+
+    @GetMapping("/{id}")
+    public Mouse getById(@PathVariable UUID id) {
+        return mouseService.getById(id);
     }
 
     @PostMapping
     public Mouse create(@RequestBody Mouse mouse) {
-        return mouseRepository.save(mouse);
-    }
-
-    @GetMapping("/{id}")
-    public Mouse getById(@PathVariable int id) {
-        return mouseRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Mouse not found with id: " + id));
+        return mouseService.save(mouse);
     }
 
     @PutMapping("/{id}")
-    public Mouse update(@PathVariable int id, @RequestBody Mouse updatedMouse) {
-        Mouse mouse = mouseRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Mouse not found with id: " + id));
-
+    public Mouse update(@PathVariable UUID id, @RequestBody Mouse updatedMouse) {
+        Mouse mouse = mouseService.getById(id);
         mouse.setName(updatedMouse.getName());
-        return mouseRepository.save(mouse);
+        return mouseService.save(mouse);
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable int id) {
-        mouseRepository.deleteById(id);
+    public void delete(@PathVariable UUID id) {
+        mouseService.deleteById(id);
     }
 }

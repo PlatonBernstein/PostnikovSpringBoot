@@ -1,0 +1,2 @@
+ALTER TABLE public.mouses
+ADD COLUMN test BOOLEAN DEFAULT TRUE;

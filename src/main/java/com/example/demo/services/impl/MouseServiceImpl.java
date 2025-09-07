@@ -1,7 +1,7 @@
 package com.example.demo.services.impl;
 
 import com.example.demo.entities.Mouse;
-import com.example.demo.repository.MouseRepository;
+import com.example.demo.repositories.MouseRepository;
 import com.example.demo.services.MouseService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;

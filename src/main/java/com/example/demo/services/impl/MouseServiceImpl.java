@@ -1,9 +1,9 @@
 package com.example.demo.services.impl;
 
+import com.example.demo.auxillaries.WrongIdException;
 import com.example.demo.entities.Mouse;
 import com.example.demo.repositories.MouseRepository;
 import com.example.demo.services.MouseService;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -16,17 +16,21 @@ public class MouseServiceImpl implements MouseService {
 
     @Override
     public Mouse save(Mouse mouse) {
+        if  (mouse.getId() != null) {
+            getById(mouse.getId());
+        }
         return mouseRepository.save(mouse);
     }
 
     @Override
     public void deleteById(UUID id) {
+        getById(id);
         mouseRepository.deleteById(id);
     }
 
     @Override
     public Mouse getById(UUID id) {
-        return mouseRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Mouse not found with id: " + id));
+        return mouseRepository.findById(id).orElseThrow(() -> new WrongIdException(id));
     }
 
     @Override
@@ -34,3 +38,6 @@ public class MouseServiceImpl implements MouseService {
         return mouseRepository.findAll();
     }
 }
+
+
+// advicehandler

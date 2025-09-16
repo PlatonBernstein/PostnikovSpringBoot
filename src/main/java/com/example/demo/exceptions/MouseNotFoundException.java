@@ -1,10 +1,10 @@
-package com.example.demo.auxillaries;
+package com.example.demo.exceptions;
 
 import lombok.AllArgsConstructor;
 import java.util.UUID;
 
 @AllArgsConstructor
-public class WrongIdException extends RuntimeException {
+public class MouseNotFoundException extends RuntimeException {
     private final UUID mouseId;
 
     @Override

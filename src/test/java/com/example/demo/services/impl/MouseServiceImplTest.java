@@ -1,10 +1,10 @@
 package com.example.demo.services.impl;
 
+import com.example.demo.exceptions.MouseNotFoundException;
 import com.example.demo.config.PostgresTestConfig;
 import com.example.demo.controllers.MouseController;
 import com.example.demo.entities.Mouse;
 import lombok.SneakyThrows;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,89 +25,110 @@ public class MouseServiceImplTest {
 
     @SneakyThrows
     @Test
+    public void testGetAllMouse() {
+        String mouseName1 = "Mouse";
+        String mouseName2 = "Mice";
+
+        mouseController.create(mouseName1);
+        mouseController.create(mouseName2);
+
+        List<Mouse> mouseList = mouseController.getAll();
+        assertThat(mouseList).isNotNull();
+        assertThat(mouseList.size()).isEqualTo(2);
+        Mouse mouse1 = mouseList.stream()
+                .filter(m -> m.getName().equals(mouseName1))
+                .findFirst()
+                .get();
+        Mouse mouse2 = mouseList.stream()
+                .filter(m -> m.getName().equals(mouseName2))
+                .findFirst()
+                .get();
+        assertThat(mouse1).isNotNull();
+        assertThat(mouse2).isNotNull();
+        mouseController.delete(mouse1.getId());
+        mouseController.delete(mouse2.getId());
+    }
+
+    @SneakyThrows
+    @Test
     public void testAddMouse() {
-        UUID id = UUID.randomUUID();
-        Mouse mouse = Mouse.builder().id(id).name("Mouse").build();
+        String mouseName = "Mouse";
+        mouseController.create(mouseName);
 
-        mouseController.create(mouse);
+        List<Mouse> mousesList = mouseController.getAll();
+        Mouse mouseCreated = new Mouse();
+        for (Mouse mouse : mousesList) {
+            if (mouse.getName().equals(mouseName)) {
+                mouseCreated = mouse;
+                break;
+            }
+        }
 
-        Mouse mouseCreated = mouseController.getById(id);
-        assertThat(mouseCreated.getId()).isEqualTo(id);
-        assertThat(mouseCreated.getName()).isEqualTo(mouse.getName());
+        assertThat(mouseCreated.getName()).isEqualTo(mouseName);
+        mouseController.delete(mouseCreated.getId());
     }
 
     @SneakyThrows
     @Test
     public void testDeleteMouse() {
-        UUID id = UUID.randomUUID();
-        Mouse mouse = Mouse.builder().id(id).name("Mouse").build();
+        String mouseName = "Mouse";
+        mouseController.create(mouseName);
 
-        mouseController.create(mouse);
-        Mouse mouseFound = mouseController.getById(id);
-        assertThat(mouseFound).isNotNull();
-        assertThat(mouseFound.getId()).isEqualTo(id);
+        List<Mouse> mousesList = mouseController.getAll();
+        UUID mouseID = mousesList.stream()
+                .filter(m -> m.getName().equals(mouseName))
+                .findFirst()
+                .map(Mouse::getId)
+                .orElseThrow(() -> new RuntimeException("Mouse with name " + mouseName + " not found"));
 
-        mouseController.delete(id);
-        assertThat(mouseController.getById(id)).isNull();
-
-        assertThatThrownBy(() -> mouseController.getById(id))
-                .isInstanceOf(EntityNotFoundException.class)
-                .hasMessageContaining("Mouse not found");
+        mouseController.delete(mouseID);
+        assertThatThrownBy(() -> mouseController.getById(mouseID))
+                .isInstanceOf(MouseNotFoundException.class)
+                .hasMessageContaining("is not found");
     }
 
     @SneakyThrows
     @Test
     public void testUpdateMouse() {
-        UUID id = UUID.randomUUID();
-        Mouse mouse = Mouse.builder().id(id).name("Mouse").build();
+        String mouseName = "Mouse";
+        mouseController.create(mouseName);
 
-        mouseController.create(mouse);
-        Mouse mouseFound = mouseController.getById(id);
-        assertThat(mouseFound).isNotNull();
-        assertThat(mouseFound.getId()).isEqualTo(id);
+        List<Mouse> mousesList = mouseController.getAll();
+        UUID mouseID = mousesList.stream()
+                .filter(m -> m.getName().equals(mouseName))
+                .findFirst()
+                .map(Mouse::getId)
+                .orElseThrow(() -> new RuntimeException("Mouse with name " + mouseName + " not found"));
 
-        Mouse mouseUpdated = new Mouse();
-        mouseUpdated.setName("Mice");
-        mouseUpdated.setId(id);
+        Mouse mouseUpdated = Mouse.builder().id(mouseID).name("Mice").build();
         mouseController.update(mouseUpdated);
-        Mouse updated = mouseController.getById(id);
+        Mouse updated = mouseController.getById(mouseID);
         assertThat(updated).isNotNull();
         assertThat(updated.getName()).isEqualTo(mouseUpdated.getName());
-        assertThat(updated.getId()).isEqualTo(id);
+        assertThat(updated.getId()).isEqualTo(mouseID);
+        mouseController.delete(mouseID);
     }
 
     @SneakyThrows
     @Test
     public void testGetMouseById() {
-        UUID id = UUID.randomUUID();
-        Mouse mouse = Mouse.builder().id(id).name("Mouse").build();
+        String mouseName = "Mouse";
+        mouseController.create(mouseName);
 
-        mouseController.create(mouse);
-        Mouse found = mouseController.getById(id);
-        assertThat(found).isNotNull();
-        assertThat(found.getId()).isEqualTo(id);
-        assertThat(found.getName()).isEqualTo(mouse.getName());
+        List<Mouse> mousesList = mouseController.getAll();
+        UUID mouseID = mousesList.stream()
+                .filter(m -> m.getName().equals(mouseName))
+                .findFirst()
+                .map(Mouse::getId)
+                .orElseThrow(() -> new RuntimeException("Mouse with name " + mouseName + " not found"));
+
+        Mouse mouseFound = mouseController.getById(mouseID);
+        assertThat(mouseFound).isNotNull();
+        assertThat(mouseFound.getId()).isEqualTo(mouseID);
+        assertThat(mouseFound.getName()).isEqualTo(mouseName);
+        mouseController.delete(mouseID);
     }
 
-    @SneakyThrows
-    @Test
-    public void testGetAllMouse() {
-        UUID id1 = UUID.randomUUID();
-        Mouse mouse1 = Mouse.builder().id(id1).name("Mouse").build();
 
-        UUID id2 = UUID.randomUUID();
-        Mouse mouse2 = Mouse.builder().id(id2).name("Mice").build();
-
-        mouseController.create(mouse1);
-        mouseController.create(mouse2);
-
-        List<Mouse> mouseList = mouseController.getAll();
-        assertThat(mouseList).isNotNull();
-        assertThat(mouseList.size()).isEqualTo(2);
-        assertThat(mouseList.get(0).getId()).isEqualTo(id1);
-        assertThat(mouseList.get(0).getName()).isEqualTo(mouse1.getName());
-        assertThat(mouseList.get(1).getId()).isEqualTo(id2);
-        assertThat(mouseList.get(1).getName()).isEqualTo(mouse2.getName());
-    }
 
 }

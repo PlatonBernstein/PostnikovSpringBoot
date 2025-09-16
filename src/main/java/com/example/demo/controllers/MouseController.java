@@ -1,6 +1,6 @@
 package com.example.demo.controllers;
 
-import com.example.demo.auxillaries.WrongIdException;
+import com.example.demo.exceptions.MouseNotFoundException;
 import com.example.demo.entities.Mouse;
 import com.example.demo.services.MouseService;
 import lombok.RequiredArgsConstructor;
@@ -27,13 +27,13 @@ public class MouseController {
     }
 
     @PostMapping
-    public Mouse create(@RequestBody Mouse mouse) {
-        return mouseService.save(mouse);
+    public Mouse create(@RequestBody String name) {
+        return mouseService.save(name);
     }
 
     @PutMapping("/{id}")
     public Mouse update(@RequestBody Mouse updatedMouse) {
-        return mouseService.save(updatedMouse);
+        return mouseService.update(updatedMouse);
     }
 
     @DeleteMapping("/{id}")
@@ -41,10 +41,12 @@ public class MouseController {
         mouseService.deleteById(id);
     }
 
-    @ExceptionHandler(WrongIdException.class)
-    public ResponseEntity<String> handleIdNotFound(WrongIdException ex) {
+    /*
+    @ExceptionHandler(MouseNotFoundException.class)
+    public ResponseEntity<String> handleMouseNotFound(MouseNotFoundException ex) {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
                 .body(ex.getMessage());
     }
+    */
 }

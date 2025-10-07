@@ -24,19 +24,22 @@ public class MouseController {
     }
 
     @PostMapping
-    public Mouse create(@RequestBody Mouse mouse) {
-        return mouseService.save(mouse);
+    public Mouse create(@RequestBody String name) {
+        return mouseService.save(name);
     }
 
     @PutMapping("/{id}")
-    public Mouse update(@PathVariable UUID id, @RequestBody Mouse updatedMouse) {
-        Mouse mouse = mouseService.getById(id);
-        mouse.setName(updatedMouse.getName());
-        return mouseService.save(mouse);
+    public Mouse update(@RequestBody Mouse updatedMouse) {
+        return mouseService.update(updatedMouse);
     }
 
     @DeleteMapping("/{id}")
     public void delete(@PathVariable UUID id) {
         mouseService.deleteById(id);
+    }
+
+    @DeleteMapping
+    public void deleteAll() {
+        mouseService.deleteAll();
     }
 }

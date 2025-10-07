@@ -8,6 +8,7 @@ public interface MouseService {
      Mouse save(String name);
      Mouse update(Mouse mouse);
      void deleteById(UUID id);
+     void deleteAll();
      Mouse getById(UUID id);
      List<Mouse> getAll();
 }

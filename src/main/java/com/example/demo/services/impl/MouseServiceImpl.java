@@ -23,7 +23,7 @@ public class MouseServiceImpl implements MouseService {
 
     @Override
     public Mouse update(Mouse mouse) {
-        if  (mouse.getId() != null) {
+        if (mouse.getId() != null) { //точно ли мне нужна эта проверка?
             getById(mouse.getId());
         }
         return mouseRepository.save(mouse);
@@ -33,6 +33,11 @@ public class MouseServiceImpl implements MouseService {
     public void deleteById(UUID id) {
         getById(id);
         mouseRepository.deleteById(id);
+    }
+
+    @Override
+    public void deleteAll() {
+        mouseRepository.deleteAll();
     }
 
     @Override

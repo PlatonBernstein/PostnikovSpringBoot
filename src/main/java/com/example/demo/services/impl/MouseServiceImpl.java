@@ -5,8 +5,10 @@ import com.example.demo.entities.Mouse;
 import com.example.demo.repositories.MouseRepository;
 import com.example.demo.services.MouseService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -46,7 +48,11 @@ public class MouseServiceImpl implements MouseService {
     }
 
     @Override
-    public List<Mouse> getAll() {
-        return mouseRepository.findAll();
+    public List<Mouse> getAll(Optional <Pageable> pageableOptional) {
+        if (pageableOptional.isPresent()) {
+            Pageable pageable = pageableOptional.get();
+            return mouseRepository.findAll(pageable).toList();
+        }
+        else return mouseRepository.findAll();
     }
 }

@@ -4,7 +4,9 @@ import com.example.demo.entities.Mouse;
 import com.example.demo.services.MouseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -14,8 +16,8 @@ public class MouseController {
     private final MouseService mouseService;
 
     @GetMapping
-    public List<Mouse> getAll() {
-        return mouseService.getAll();
+    public List<Mouse> getAll(Optional <Pageable> pageable) {
+        return mouseService.getAll(pageable);
     }
 
     @GetMapping("/{id}")

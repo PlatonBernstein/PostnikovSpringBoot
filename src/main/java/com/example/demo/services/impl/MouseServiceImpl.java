@@ -5,10 +5,10 @@ import com.example.demo.entities.Mouse;
 import com.example.demo.repositories.MouseRepository;
 import com.example.demo.services.MouseService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -17,9 +17,7 @@ public class MouseServiceImpl implements MouseService {
     private final MouseRepository mouseRepository;
 
     @Override
-    public Mouse save(String name) {
-        Mouse mouse = new Mouse();
-        mouse.setName(name);
+    public Mouse save(Mouse mouse) {
         return mouseRepository.save(mouse);
     }
 
@@ -37,6 +35,7 @@ public class MouseServiceImpl implements MouseService {
         mouseRepository.deleteById(id);
     }
 
+    // плохой метод в рамках бизнес-логики
     @Override
     public void deleteAll() {
         mouseRepository.deleteAll();
@@ -48,11 +47,8 @@ public class MouseServiceImpl implements MouseService {
     }
 
     @Override
-    public List<Mouse> getAll(Optional <Pageable> pageableOptional) {
-        if (pageableOptional.isPresent()) {
-            Pageable pageable = pageableOptional.get();
-            return mouseRepository.findAll(pageable).toList();
-        }
-        else return mouseRepository.findAll();
+    public Page<Mouse> getAll(Pageable pageable) {
+        if (!pageable.isPaged()) pageable = PageRequest.of(0, 5);
+        return mouseRepository.findAll(pageable);
     }
 }

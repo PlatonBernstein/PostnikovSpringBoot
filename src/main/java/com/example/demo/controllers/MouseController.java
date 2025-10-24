@@ -16,8 +16,8 @@ public class MouseController {
     private final MouseService mouseService;
 
     @GetMapping
-    public Page<Mouse> getAll(Pageable pageable) {
-        return mouseService.getAll(pageable);
+    public Page<Mouse> getAll(Pageable pageable, boolean isDeleted) {
+        return mouseService.getAll(pageable, isDeleted);
     }
 
     @GetMapping("/{id}")
@@ -38,10 +38,5 @@ public class MouseController {
     @DeleteMapping("/{id}")
     public void delete(@PathVariable UUID id) {
         mouseService.deleteById(id);
-    }
-
-    @DeleteMapping
-    public void deleteAll() {
-        mouseService.deleteAll();
     }
 }

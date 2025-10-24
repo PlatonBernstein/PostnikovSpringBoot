@@ -11,5 +11,5 @@ public interface MouseService {
      void deleteById(UUID id);
      void deleteAll();
      Mouse getById(UUID id);
-     Page<Mouse> getAll(Pageable pageable);
+     Page<Mouse> getAll(Pageable pageable, boolean isDeleted);
 }

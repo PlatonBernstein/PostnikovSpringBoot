@@ -1,12 +1,14 @@
 package com.example.demo.services.impl;
 
+import com.example.demo.exceptions.MouseNotFoundException;
 import com.example.demo.entities.Mouse;
-import com.example.demo.repository.MouseRepository;
+import com.example.demo.repositories.MouseRepository;
 import com.example.demo.services.MouseService;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import java.util.List;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -20,17 +22,33 @@ public class MouseServiceImpl implements MouseService {
     }
 
     @Override
+    public Mouse update(Mouse mouse) {
+        if (mouse.getId() != null) { //точно ли мне нужна эта проверка?
+            getById(mouse.getId());
+        }
+        return mouseRepository.save(mouse);
+    }
+
+    @Override
     public void deleteById(UUID id) {
+        getById(id);
         mouseRepository.deleteById(id);
+    }
+
+    // плохой метод в рамках бизнес-логики
+    @Override
+    public void deleteAll() {
+        mouseRepository.deleteAll();
     }
 
     @Override
     public Mouse getById(UUID id) {
-        return mouseRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Mouse not found with id: " + id));
+        return mouseRepository.findById(id).orElseThrow(() -> new MouseNotFoundException(id));
     }
 
     @Override
-    public List<Mouse> getAll() {
-        return mouseRepository.findAll();
+    public Page<Mouse> getAll(Pageable pageable) {
+        if (!pageable.isPaged()) pageable = PageRequest.of(0, 5);
+        return mouseRepository.findAll(pageable);
     }
 }

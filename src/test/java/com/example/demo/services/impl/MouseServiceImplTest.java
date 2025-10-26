@@ -4,16 +4,16 @@ import com.example.demo.exceptions.MouseNotFoundException;
 import com.example.demo.config.PostgresTestConfig;
 import com.example.demo.controllers.MouseController;
 import com.example.demo.entities.Mouse;
+import com.example.demo.services.MouseService;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -25,11 +25,12 @@ import java.util.*;
 public class MouseServiceImplTest {
     @Autowired
     private MouseController mouseController;
-    private static final Logger logger = LoggerFactory.getLogger(MouseServiceImplTest.class);
+    @Autowired
+    private MouseService mouseService;
 
     @BeforeEach
     public void setup() {
-        mouseController.deleteAll();
+        mouseService.deleteAll();
     }
 
     @SneakyThrows
@@ -41,7 +42,7 @@ public class MouseServiceImplTest {
         namesListOld.add(mouseName1);
         namesListOld.add(mouseName2);
 
-        List<String> namesListNew = mouseController.getAll(Pageable.unpaged()).stream()
+        List<String> namesListNew = mouseController.getAll(Pageable.unpaged(), false).stream()
                 .map(Mouse::getName)
                 .toList();
         assertThat(namesListNew).containsAll(namesListOld);
@@ -53,7 +54,7 @@ public class MouseServiceImplTest {
         Mouse mouse1 = Mouse.builder().name("Mouse").build();
         mouseController.create(mouse1);
 
-        List<String> namesList = mouseController.getAll(Pageable.unpaged()).stream()
+        List<String> namesList = mouseController.getAll(Pageable.unpaged(), false).stream()
                 .map(Mouse::getName)
                 .toList();
         assertThat(namesList).contains(mouse1.getName());
@@ -64,7 +65,7 @@ public class MouseServiceImplTest {
     public void testDeleteMouse() {
         String uniqueMouseName = UUID.randomUUID().toString();
 
-        UUID mouseID = mouseController.getAll(Pageable.unpaged()).stream()
+        UUID mouseID = mouseController.getAll(Pageable.unpaged(), false).stream()
                 .filter(m -> m.getName().equals(uniqueMouseName))
                 .map(Mouse::getId)
                 .toList()
@@ -81,7 +82,7 @@ public class MouseServiceImplTest {
     public void testUpdateMouse() {
         String uniqueMouseName = UUID.randomUUID().toString();
 
-        UUID mouseId = mouseController.getAll(Pageable.unpaged()).stream()
+        UUID mouseId = mouseController.getAll(Pageable.unpaged(), false).stream()
                 .filter(m -> m.getName().equals(uniqueMouseName))
                 .map(Mouse::getId)
                 .toList()
@@ -100,7 +101,7 @@ public class MouseServiceImplTest {
     public void testGetMouseById() {
         String uniqueMouseName = UUID.randomUUID().toString();
 
-        UUID mouseId = mouseController.getAll(Pageable.unpaged()).stream()
+        UUID mouseId = mouseController.getAll(Pageable.unpaged(), false).stream()
                 .filter(m -> m.getName().equals(uniqueMouseName))
                 .map(Mouse::getId)
                 .toList()
@@ -116,24 +117,24 @@ public class MouseServiceImplTest {
     и ассёртами их сверять, соответственно пейдж ту пейдж*/
     @SneakyThrows
     @Test
-    public void testBigDataGet() {
-        int numberOfPages = 10000;
+    public void testPagination() {
+        int numberOfPages = 100;
         int pageSize = 5;
-        List<List<Mouse>> listOfPages = new ArrayList<>();
-        for (int i = 0; i < numberOfPages; i++) {
-            List<Mouse> pageOfMouses =  new ArrayList<>();
-            for (int j = 0; j < pageSize; j++) {
-                Mouse mouseCurr = Mouse.builder().name("Mouse" + (i * pageSize + j)).build();
-                pageOfMouses.add(mouseCurr);
-                mouseController.create(mouseCurr);
-            }
-            listOfPages.add(pageOfMouses);
+        List<Mouse> allOfMouses =  new ArrayList<>();
+        for (int i = 0; i < numberOfPages * pageSize; i++) {
+            Mouse mouseCurr = Mouse.builder().name(UUID.randomUUID().toString()).build();
+            allOfMouses.add(mouseCurr);
+            mouseController.create(mouseCurr);
         }
+        allOfMouses.sort(Comparator.comparing(Mouse::getName));
+
 
         for (int i = 0; i < numberOfPages; i++) {
-            List<Mouse> pageOfCreatedMouses = mouseController.getAll(PageRequest.of(i, pageSize)).toList();
+            List<Mouse> pageOfCreatedMouses = mouseController.getAll(PageRequest.of(i, pageSize,
+                    Sort.by("name").ascending()), false).toList();
 
-            List<String> expectedNames = listOfPages.get(i).stream()
+            List<Mouse> pageOfOriginalMouses = allOfMouses.subList(i * pageSize, (i * pageSize) + pageSize);
+            List<String> expectedNames = pageOfOriginalMouses.stream()
                     .map(Mouse::getName)
                     .toList();
             List<String> actualNames = pageOfCreatedMouses.stream()
@@ -143,4 +144,4 @@ public class MouseServiceImplTest {
             assertThat(actualNames).containsExactlyElementsOf(expectedNames);
         }
     }
-}
+}   

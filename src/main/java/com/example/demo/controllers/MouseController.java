@@ -8,19 +8,19 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Pageable;
 import java.util.UUID;
 
-// Заебашить енум с константами
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/mouses")
 public class MouseController {
     private final MouseService mouseService;
+    private final String requestMappingPath = "/{id}";
 
     @GetMapping
-    public Page<Mouse> getAll(Pageable pageable) {
-        return mouseService.getAll(pageable);
+    public Page<Mouse> getAll(Pageable pageable, boolean isDeleted) {
+        return mouseService.getAll(pageable, isDeleted);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping(requestMappingPath)
     public Mouse getById(@PathVariable UUID id) {
         return mouseService.getById(id);
     }
@@ -30,18 +30,13 @@ public class MouseController {
         return mouseService.save(mouse);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping(requestMappingPath)
     public Mouse update(@RequestBody Mouse updatedMouse) {
         return mouseService.update(updatedMouse);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping(requestMappingPath)
     public void delete(@PathVariable UUID id) {
         mouseService.deleteById(id);
-    }
-
-    @DeleteMapping
-    public void deleteAll() {
-        mouseService.deleteAll();
     }
 }
